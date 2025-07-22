@@ -1,0 +1,17 @@
+# {{cookiecutter.project_name}}/environment.yml
+name: {{cookiecutter.project_name}}
+channels:
+  - {{cookiecutter.conda_channel_priority}}
+  - defaults
+dependencies:
+  - python={{cookiecutter.python_version}}
+  - pip
+  # Core dependencies
+  - numpy
+  - pandas
+  # Add your project dependencies here
+  
+  # Pip dependencies
+  - pip:
+    - -e .  # Install package in development mode
+  

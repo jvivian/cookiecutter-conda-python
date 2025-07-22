@@ -1,0 +1,43 @@
+# {{cookiecutter.project_name}}/environment-dev.yml
+name: {{cookiecutter.project_name}}-dev
+channels:
+  - {{cookiecutter.conda_channel_priority}}
+  - defaults
+dependencies:
+  - python={{cookiecutter.python_version}}
+  - pip
+  # Core dependencies
+  - numpy
+  - pandas
+  
+  # Development and testing dependencies
+  {% if cookiecutter.use_pytest == 'y' -%}
+  - pytest
+  - pytest-cov
+  - pytest-xdist
+  {%- endif %}
+  {% if cookiecutter.use_black == 'y' -%}
+  - black
+  {%- endif %}
+  {% if cookiecutter.use_ruff == 'y' -%}
+  - ruff
+  {%- endif %}
+  {% if cookiecutter.use_sphinx_docs == 'y' -%}
+  - sphinx
+  - sphinx-rtd-theme
+  - sphinxcontrib-napoleon
+  {%- endif %}
+  {% if cookiecutter.use_mkdocs == 'y' -%}
+  - mkdocs
+  - mkdocs-material
+  {%- endif %}
+  - mypy
+  - pre-commit
+  - ipython
+  - jupyter
+  - build  # For python -m build
+  
+  # Pip dependencies
+  - pip:
+    - -e .  # Install package in development mode
+  

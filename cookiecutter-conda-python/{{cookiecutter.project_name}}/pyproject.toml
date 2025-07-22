@@ -1,0 +1,112 @@
+# {{cookiecutter.project_name}}/pyproject.toml
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{cookiecutter.project_name}}"
+version = "{{cookiecutter.version}}"
+description = "{{cookiecutter.project_short_description}}"
+readme = "README.md"
+license = {text = "{{cookiecutter.license}}"}
+authors = [
+    {name = "{{cookiecutter.author_name}}", email = "{{cookiecutter.author_email}}"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: {{cookiecutter.license}} License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: {{cookiecutter.python_version}}",
+]
+requires-python = ">={{cookiecutter.python_version}}"
+dependencies = [
+    "numpy",
+    "pandas",
+]
+
+[project.optional-dependencies]
+dev = [
+    {% if cookiecutter.use_pytest == 'y' -%}
+    "pytest>=7.0",
+    "pytest-cov",
+    "pytest-xdist",
+    {%- endif %}
+    {% if cookiecutter.use_black == 'y' -%}
+    "black",
+    {%- endif %}
+    {% if cookiecutter.use_ruff == 'y' -%}
+    "ruff",
+    {%- endif %}
+    "mypy",
+    "pre-commit",
+]
+docs = [
+    {% if cookiecutter.use_sphinx_docs == 'y' -%}
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinxcontrib-napoleon",
+    {%- endif %}
+    {% if cookiecutter.use_mkdocs == 'y' -%}
+    "mkdocs",
+    "mkdocs-material",
+    {%- endif %}
+]
+
+[project.urls]
+Homepage = "https://github.com/{{cookiecutter.github_username}}/{{cookiecutter.project_name}}"
+Repository = "https://github.com/{{cookiecutter.github_username}}/{{cookiecutter.project_name}}"
+Issues = "https://github.com/{{cookiecutter.github_username}}/{{cookiecutter.project_name}}/issues"
+
+{% if cookiecutter.include_cli == 'y' -%}
+[project.scripts]
+{{cookiecutter.project_name}} = "{{cookiecutter.package_name}}.cli:main"
+{%- endif %}
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-dir]
+
+{% if cookiecutter.use_black == 'y' -%}
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+{%- endif %}
+
+{% if cookiecutter.use_ruff == 'y' -%}
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]  # Allow assert statements in tests
+{%- endif %}
+
+[tool.mypy]
+python_version = "{{cookiecutter.python_version}}"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+{% if cookiecutter.use_pytest == 'y' -%}
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov={{cookiecutter.package_name}} --cov-report=term-missing --cov-report=xml"
+{%- endif %}

@@ -1,0 +1,85 @@
+# {{cookiecutter.project_name}}/.github/workflows/docs.yml
+{% if cookiecutter.use_sphinx_docs == 'y' -%}
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: {{cookiecutter.python_version}}
+        environment-file: environment-dev.yml
+        activate-environment: {{cookiecutter.project_name}}-dev
+
+    - name: Install package
+      shell: bash -l {0}
+      run: |
+        pip install -e .
+
+    - name: Build documentation
+      shell: bash -l {0}
+      run: |
+        cd docs
+        make html
+
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
+        publish_dir: ./docs/_build/html
+{%- endif %}
+
+{% if cookiecutter.use_mkdocs == 'y' -%}
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: {{cookiecutter.python_version}}
+        environment-file: environment-dev.yml
+        activate-environment: {{cookiecutter.project_name}}-dev
+
+    - name: Install package
+      shell: bash -l {0}
+      run: |
+        pip install -e .
+
+    - name: Build documentation
+      shell: bash -l {0}
+      run: |
+        mkdocs build
+
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
+        publish_dir: ./site
+{%- endif %}

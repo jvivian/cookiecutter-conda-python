@@ -1,0 +1,97 @@
+# {{cookiecutter.project_name}}/.github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: {% raw %}${{ matrix.os }}{% endraw %}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: [{{cookiecutter.python_version}}]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: {% raw %}${{ matrix.python-version }}{% endraw %}
+        environment-file: environment-dev.yml
+        activate-environment: {{cookiecutter.project_name}}-dev
+
+    - name: Conda info
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
+
+    - name: Install package
+      shell: bash -l {0}
+      run: |
+        pip install -e .
+
+    {% if cookiecutter.use_ruff == 'y' -%}
+    - name: Lint with ruff
+      shell: bash -l {0}
+      run: |
+        ruff check {{cookiecutter.package_name}}/ tests/
+    {%- endif %}
+
+    {% if cookiecutter.use_black == 'y' -%}
+    - name: Check formatting with black
+      shell: bash -l {0}
+      run: |
+        black --check {{cookiecutter.package_name}}/ tests/
+    {%- endif %}
+
+    - name: Type check with mypy
+      shell: bash -l {0}
+      run: |
+        mypy {{cookiecutter.package_name}}
+
+    {% if cookiecutter.use_pytest == 'y' -%}
+    - name: Test with pytest
+      shell: bash -l {0}
+      run: |
+        pytest tests/ -v --cov={{cookiecutter.package_name}} --cov-report=xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+    {%- endif %}
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        auto-update-conda: true
+        python-version: {{cookiecutter.python_version}}
+        environment-file: environment-dev.yml
+        activate-environment: {{cookiecutter.project_name}}-dev
+
+    - name: Build package
+      shell: bash -l {0}
+      run: |
+        python -m build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
